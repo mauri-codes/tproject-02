@@ -83,4 +83,12 @@ router.post("/edit", ensureAuthenticated, function (req, res, next) {
     });
 });
 
+router.post("/delete",function (req, res) {
+    var data = req.body;
+    User.remove({"username": data.name}, function (err) {
+        if(err) console.log(err);
+    });
+    res.sendStatus(200);
+});
+
 module.exports = router;
