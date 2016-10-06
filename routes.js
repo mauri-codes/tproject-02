@@ -1,5 +1,7 @@
 var express = require("express");
 var User = require("./models/user");
+var Link = require("./models/link");
+var Process = require("./models/process");
 var router = express.Router();
 var passport = require("passport");
 router.use(function(req, res, next) {
@@ -30,7 +32,8 @@ router.post("/signup", function(req, res, next) {
         }
         var newUser = new User({
             username: username,
-            password: password
+            password: password,
+            role: 4
         });
         newUser.save(next);
     });
@@ -89,6 +92,10 @@ router.post("/delete",function (req, res) {
         if(err) console.log(err);
     });
     res.sendStatus(200);
+});
+
+router.get("/FingerprintRequest", function (req, res) {
+
 });
 
 module.exports = router;

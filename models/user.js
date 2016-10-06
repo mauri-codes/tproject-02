@@ -6,6 +6,8 @@ var SALT_FACTOR = 10;
 var userSchema = mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    role: { type: Number, required: true },//1-4, 1->user, 2->client, 3->employee, 4->admin
+    fingerprintID: { type: Number },
     createdAt: { type: Date, default: Date.now },
     displayName: String,
     bio: String
