@@ -8,7 +8,6 @@ var linkSchema = mongoose.Schema({
     processName: String
 });
 
-console.log("hello world connection");
 
 var Link = mongoose.model("Link", linkSchema);
 module.exports = Link;

@@ -8,9 +8,11 @@
                 <%= user.name() %>
             </a>
         </div>
+       <% if(currentUser) if(currentUser.role === 4){ %>
         <div class="col-md-2 alert alert-danger nopad text-center delUser" id="<%= user.username %>">
             Delete
         </div>
+        <% } %>
     </div>
     <% if (user.bio) { %>
     <div class="panel-body"><%= user.bio %></div>

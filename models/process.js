@@ -6,7 +6,6 @@ var processSchema = mongoose.Schema({
     fingerprint: Boolean,
     role: { type: Number, required: true }//1-4, 1->user, 2->client, 3->employee, 4->admin
 });
-console.log("hello world Process");
 
 var Process = mongoose.model("Process", processSchema);
 module.exports = Process;
