@@ -96,6 +96,9 @@ router.post("/delete",function (req, res) {
 
 router.post("/setlink", function (req, res) {
     var data = req.body;
+    Link.remove({"username": data.name}, function (err) {
+        if(err) console.log(err);
+    });
     var newLink = new Link({
         linkID: data.id,
         username: data.name,
@@ -132,12 +135,17 @@ router.post("/getconnection", function (req, res) {
         });
 });
 
-router.get("/FingerprintRequest/:url", function (req, res) {
-    var data = req.paramas.url;
-    Link.findOneAndUpdate({"linkID": data}, {"status": "Fingerprint"}, function(err, doc){
-        if (err) return res.send(500, { error: err });
-        res.json({"success": "true"});
+router.get("/fingerprintrequest/:url", function (req, res) {
+    var data = parseInt(req.params.url);
+    User.findOne({"fingerprintID": data} ,function(err, user) {
+        if (err) { oonsole.log(err)}
+        Link.findOneAndUpdate({"username": user.username}, {"status": "Fingerprint"}, function(err, doc){
+            if (err) return res.send(500, { error: err });
+            res.json({"success": "true"});
+        });
+
     });
+
 });
 
 module.exports = router;

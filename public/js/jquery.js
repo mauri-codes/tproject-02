@@ -3,25 +3,30 @@ $(document).ready(function(){
     var waitingAnnounce = "<div class='back-announce'><div class='announce'> " +
         "<div class='divImage'>" +
         "<img class= 'loading' src='/images/ajax-loader.gif' alt='Be patient...' />" +
-        "</div><div class='loadingmessage'>Wait a little while please</div></div></div>";
+        "</div><div class='loadingmessage'>Waiting for fingerprint scanner connection</div></div></div>";
 
     $(".delUser").on("click", function(){
         $('.container').prepend(waitingAnnounce);
-        setLink();
-        //var name = $(this).attr("id");
-        //ajaxDelete(name);
-        //$(this).parent().parent().remove();
+        var nameToDelete = $(this).attr("id");
+        setLink(nameToDelete);
     });
 
 });
+function removeMessage() {
+    $(".back-announce").remove();
+}
 //Deletes a document from users collection with username name
-function ajaxDelete(name) {
+function ajaxDelete(nameToDelete) {
     $.ajax({
         type:'POST',
         url: '/delete',
-        data: {"name": name, "process": "delUser"},
+        data: {"name": nameToDelete, "process": "delUser"},
         success: function () {
-            alert("success delete");
+            $(".loadingmessage").text("User Deleted from Database");
+            $(".loadingmessage").css({ 'font-weight': 'bold' });
+            setTimeout(removeMessage, 2000);
+            $("#"+nameToDelete).parent().parent().remove();
+            //sometimes I feel I shouldn't use setTimeout so heavily
         },
         error: function () {
             alert("error delete");
@@ -30,7 +35,7 @@ function ajaxDelete(name) {
 }
 //sets a "waiting connection" status in the database,
 //waiting for the fingerprint scanner to connect.
-function setLink() {
+function setLink(nameToDelete) {
     var namex = $(".hello").attr('id');
     $.ajax({
         type:'POST',
@@ -42,8 +47,7 @@ function setLink() {
                "id": parseInt(Random(1,100000))
         },
         success: function (databack) {
-            // alert(databack.id);
-            findConnection(6, databack.id);
+            findConnection(6, databack.id, nameToDelete);
         },
         error: function () {
             alert("error setlink");
@@ -53,10 +57,13 @@ function setLink() {
 //Once the waiting connection status is set, the fingerprint scanner
 //will change it, this function will repeatedly search for that change
 //n times with Link id, if found, it will change the status to "done".
-function findConnection(n, id) {
-    //var namex = $(".hello").attr('id');
-    if(n === 0)
+function findConnection(n, id, nameToDelete) {
+    if(n === 0){
+        $(".loadingmessage").text("Time elapsed, canceling request");
+        $(".loadingmessage").css({ 'font-weight': 'bold' });
+        setTimeout(removeMessage, 2000);
         return;
+    }
     $.ajax({
         type:'POST',
         url: '/getconnection',//this could become a parameter to make it a more general purpose function
@@ -67,13 +74,11 @@ function findConnection(n, id) {
         },
         success: function (data) {
             if(data.status === "waiting"){
-                alert(n + " done " + data.link.username);
-                setTimeout(findConnection, 5000, n-1, 3134);
+                setTimeout(findConnection, 5000, n-1, id, nameToDelete);
             }
             if (data.status === "Fingerprint"){
-                alert("fingerprint success");
+                ajaxDelete(nameToDelete);
             }
-
         },
         error: function () {
             alert("error setlink");
