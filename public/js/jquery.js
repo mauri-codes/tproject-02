@@ -1,12 +1,12 @@
 $(document).ready(function(){
 
-    var ele = "<div class='back-announce'><div class='announce'> " +
+    var waitingAnnounce = "<div class='back-announce'><div class='announce'> " +
         "<div class='divImage'>" +
         "<img class= 'loading' src='/images/ajax-loader.gif' alt='Be patient...' />" +
-        "</div><div class='loadingmessage'>waiting Fingerprint Scanner connection</div></div></div>";
+        "</div><div class='loadingmessage'>Wait a little while please</div></div></div>";
 
     $(".delUser").on("click", function(){
-        $('.container').prepend(ele);
+        $('.container').prepend(waitingAnnounce);
         setLink();
         //var name = $(this).attr("id");
         //ajaxDelete(name);
@@ -14,6 +14,7 @@ $(document).ready(function(){
     });
 
 });
+//Deletes a document from users collection with username name
 function ajaxDelete(name) {
     $.ajax({
         type:'POST',
@@ -27,9 +28,10 @@ function ajaxDelete(name) {
         }
     });
 }
+//sets a "waiting connection" status in the database,
+//waiting for the fingerprint scanner to connect.
 function setLink() {
     var namex = $(".hello").attr('id');
-    console.log(namex);
     $.ajax({
         type:'POST',
         url: '/setlink',
@@ -37,15 +39,47 @@ function setLink() {
                "name": namex,
                "status": "WaitingF",
                "process": "delUser",
-               "id": Random(1,10000)
+               "id": parseInt(Random(1,100000))
         },
-        success: function (data) {
-            alert("success setLink: " + data.hi);
+        success: function (databack) {
+            // alert(databack.id);
+            findConnection(6, databack.id);
         },
         error: function () {
             alert("error setlink");
         }
     });
+}
+//Once the waiting connection status is set, the fingerprint scanner
+//will change it, this function will repeatedly search for that change
+//n times with Link id, if found, it will change the status to "done".
+function findConnection(n, id) {
+    //var namex = $(".hello").attr('id');
+    if(n === 0)
+        return;
+    $.ajax({
+        type:'POST',
+        url: '/getconnection',//this could become a parameter to make it a more general purpose function
+        data: {
+            "name": "just some random stuff",
+            "id": id,
+            "process": "delUser",//and this too
+        },
+        success: function (data) {
+            if(data.status === "waiting"){
+                alert(n + " done " + data.link.username);
+                setTimeout(findConnection, 5000, n-1, 3134);
+            }
+            if (data.status === "Fingerprint"){
+                alert("fingerprint success");
+            }
+
+        },
+        error: function () {
+            alert("error setlink");
+        }
+    });
+
 }
 function Random(min, max) {
     return Math.random() * (max - min) + min;

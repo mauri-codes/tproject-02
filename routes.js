@@ -6,7 +6,6 @@ var router = express.Router();
 var passport = require("passport");
 router.use(function(req, res, next) {
     res.locals.currentUser = req.user;
-    console.log("here");
     res.locals.errors = req.flash("error");
     res.locals.infos = req.flash("info");
     next();
@@ -97,7 +96,6 @@ router.post("/delete",function (req, res) {
 
 router.post("/setlink", function (req, res) {
     var data = req.body;
-    console.log("data.name: " + data.name);
     var newLink = new Link({
         linkID: data.id,
         username: data.name,
@@ -113,13 +111,33 @@ router.post("/setlink", function (req, res) {
             });
         }
     });
-    res.json({"hi": "world"});
+    res.json({"id": data.id});
     // res.sendStatus(200);
-
 });
 
-router.get("/FingerprintRequest", function (req, res) {
+router.post("/getconnection", function (req, res) {
+    var data = req.body;
+    Link.findOne({"linkID": data.id} ,function(err, link) {
+            if (err) { oonsole.log(err)}
+            if(link.processName === data.process){
+                if(link.status === "WaitingF"){
+                    res.json({ "link": link, "status": "waiting"});
+                }
+                if(link.status === "Fingerprint"){//fingerprint connection established
+                    res.json({ "link": link, "status": "Fingerprint"});
+                    //I should actually change this status to done here
+                }
+            }
+            else{ res.json({"status": "not fine"});}
+        });
+});
 
+router.get("/FingerprintRequest/:url", function (req, res) {
+    var data = req.paramas.url;
+    Link.findOneAndUpdate({"linkID": data}, {"status": "Fingerprint"}, function(err, doc){
+        if (err) return res.send(500, { error: err });
+        res.json({"success": "true"});
+    });
 });
 
 module.exports = router;
